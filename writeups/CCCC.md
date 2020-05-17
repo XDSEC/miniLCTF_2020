@@ -10,8 +10,8 @@ members:
 ### 1.Starting Point | Author: BC
 没啥好说的，进xdsec网站查看源码就拿到flag了...  
 
-## WEb | Author: BC，Akashic以太
-### id_wife | Author: ID1, ID2
+## WEb 
+### id_wife | Author: BC，Akashic以太
 这个题怎么说，好像根据BUUCTF的那个随便注改的吧？之前我也写过那个题的wp.
 但最开始没想到堆叠注入，试了挺多方法写脚本跑一下库名表名，最后得到了库名miniL，没跑出来表名,这个就是用二分法不断的尝试 
 
