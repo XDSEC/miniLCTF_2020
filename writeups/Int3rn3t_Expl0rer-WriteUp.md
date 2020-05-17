@@ -556,7 +556,7 @@ miniL{Epl_Oh_gre@T}
 
 ## Misc
 
-### MiniGameHacking | Author: luoqi@n, Reverier
+### MiniGameHacking | Author: luoqi@n
 
 这游戏好玩得很（虽然为了抢一血解法非常暴力
 
