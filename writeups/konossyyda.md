@@ -1,13 +1,10 @@
-# MiniL2020部分wp
-
 ---
 
-team：konossyyda
-members：
-
-- shallow
-- Lunatic
-- Ga1@xy
+team: konossyyda
+members:
+    - shallow
+    - Lunatic
+    - Ga1@xy
 
 ---
 
