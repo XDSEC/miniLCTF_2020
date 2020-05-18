@@ -77,9 +77,9 @@ id=1') or (ascii(substr(database(),4,1)))=105;SET @SQL=CONCAT('sele','ct content
 
 ![image-20200517180255401](https://image.hackerjerry.top/mini_l-ctf_wp-24.png)
 
-就是先将shellcode压入栈，然后填充垃圾字符，然后放置返回地址，然后在被调用函数栈中压入新的汇编指令。
+就是先将shellcode压入栈，然后填充垃圾字符，然后放置返回地址，然后在栈中压入新的汇编指令。
 
-当我们用常规的ret2text构造48字节字符串+ 8字节rbp+ 8字节bd函数地址(覆盖掉原返回地）
+我们构造48字节字符串++8字节bd函数地址。
 
 ![image-20200517201320081](https://image.hackerjerry.top/mini_l-ctf_wp-25.png)
 
