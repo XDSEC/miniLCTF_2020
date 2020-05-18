@@ -396,26 +396,26 @@ print(new_flag)
 
 ## Reverse
 ### EasyRe| Author: BC,M@tr1x
-我们直接看代码很迷
-![](/images/miniL/re1.png)
+我们直接看代码很迷，挺复杂
 
 直接通过od来一个一个查出来
-![](https://image.hackerjerry.top/mini_LCTF-5.png)
+![re4](https://image.hackerjerry.top/mini_LCTF-5.png)
 
-![](https://image.hackerjerry.top/mini_LCTF-6.png)
+![re5](https://image.hackerjerry.top/mini_LCTF-6.png)
 
 minil{easyre's_easy}
 
 ### Virtualization| Author: BC，M@tr1x
 
-![](https://image.hackerjerry.top/mini_LCTF-7.png)
+![vi1](https://image.hackerjerry.top/mini_LCTF-7.png)
 先看下程序大概是干啥，之后我们快速定位到对应的函数
 
-![](https://image.hackerjerry.top/mini_LCTF-8.png)
+![vi2](https://image.hackerjerry.top/mini_LCTF-8.png)
 其中有很多函数不知道其功能，通过使用od调试的时候来猜它是什么运算。
 
 之后根据算法，总共有三次循环，每次循环的功能基本一样，针对一个循环做分析
-![](https://image.hackerjerry.top/mini_LCTF-10.png)
+
+![vi3](https://image.hackerjerry.top/mini_LCTF-10.png)
 
 将自身的字符串与40624的6字节数组做异或操作，当v7大于6的时候，v7=0，然后再将异或后的字符和406050中的数组作比较，如果正确则通过，不正确，v11=0，错误。
 
