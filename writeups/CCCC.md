@@ -228,7 +228,7 @@ public void OnDamaged()
 		base.Invoke("RespawnPlayer", 1f);
 	}
 ```
-### MITM_0 | Author: M@tr1x
+### MITM_0 | Author: M@tr1x，BC
 ![image-20200517103850346](https://image.hackerjerry.top/mini_l-ctf_wp-1.png)
 
 从题目中我们可以看到MITM，即中间人欺骗，里面提示HTTPS，也就是对应SSL,TLS中间人攻击。
@@ -277,7 +277,7 @@ public void OnDamaged()
 
 在本例中则为谁有192.168.1.1告诉192.168.1.152，也就是152在之前应该就发送过arp，而下面tplink发送的广播询问的是谁有192.168.1.114告诉192.168.1.1，可以判断192.168.1.1为网关，而剩下的192.168.1.152则为攻击者。
 
-### MITM_1 | Author: M@tr1x
+### MITM_1 | Author: M@tr1x，BC
 ![image-20200517115549709](https://image.hackerjerry.top/mini_l-ctf_wp-8.png)
 
 
