@@ -83,7 +83,7 @@ img.save('flag.png')
 
 ### MITM_0 | Author：Ga1@xy
 
-第一反应就是用ip去试，第二个ip就对了：192.168.1.151
+第一反应就是用ip去试，第二个ip就对了：192.168.1.152
 
 ### MITM_1 | Author：Ga1@xy
 
