@@ -269,7 +269,7 @@ print(XOR(6 *x,s1+ s2 + s3))
 
 程序从 main 函数进入 vul 函数
 
-![image-20200518021322513](C:\Users\Breez3\AppData\Roaming\Typora\typora-user-images\image-20200518021322513.png)
+![image-20200518114423513](https://i.loli.net/2020/05/18/KWCebnm61udYF9z.png)
 
 显然在 fgets 函数处存在栈溢出，但可溢出的长度非常短，于是考虑到进行栈迁移
 
