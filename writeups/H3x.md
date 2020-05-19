@@ -1,18 +1,10 @@
-# minil ctf wp
-
-## TEAM INFO
-
-### Team
-
-We are **H3x** !
-
-### teammates
-
-cor1e
-
-eqqie 
-
-blackwatch
+---
+team: H3x
+members:
+    - cor1e
+    - eqqie
+    - blackwatch
+---
 
 ## REVERSE
 
@@ -281,7 +273,7 @@ while 1:
     time.sleep(1)#不用延时的话一直都是docker准备状态 ):
 ```
 
-
+// Frank注: 你们为什么都这么喜欢暴力啊啊啊啊啊   怪我心软了给你们模了100
 
 ## ANDROID
 
