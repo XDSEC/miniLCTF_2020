@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+
+<body onload="show()">
+    <div> your flag: </div>
+    <ul id="show"></ul>
+    <script src="index.js"></script>
+
+</body>
+<script>
+    function show() {
+        for (var i = 0; i < machine[0x0016].length; i++) {
+            var e = document.createElement('li')
+            e.textContent = machine[0x0016][i]
+            document.querySelector('#show').appendChild(e)
+        }
+    }
+</script>

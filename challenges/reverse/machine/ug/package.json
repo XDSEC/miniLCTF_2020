@@ -1,0 +1,13 @@
+{
+  "name": "ug",
+  "version": "1.0.0",
+  "description": "a js uglifier",
+  "main": "index.js",
+  "dependencies": {
+    "escodegen": "^1.6.1",
+    "esprima": "^2.5.0",
+    "uglify-js": "^2.4.24"
+  },
+  "author": "ff_mercurial",
+  "license": "ISC"
+}

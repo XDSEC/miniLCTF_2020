@@ -1,0 +1,5 @@
+var fs = require('fs')
+var ug = require('./ug')
+var src = fs.readFileSync('./index.js').toString()
+var s = ug(ug(src))
+fs.writeFileSync('output.js', s)
