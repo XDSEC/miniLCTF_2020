@@ -1,0 +1,302 @@
+diff --git a/__init__.py b/__init__.py
+index 9f0237a..d949da4 100644
+--- a/__init__.py
++++ b/__init__.py
+@@ -1,6 +1,7 @@
+ from __future__ import division  # Use floating point for math calculations
+ 
+ import fcntl
++import hashlib
+ import json
+ import random
+ import uuid
+@@ -9,7 +10,10 @@ from datetime import datetime
+ from flask import Blueprint, render_template, request
+ from flask_apscheduler import APScheduler
+ 
+-from CTFd.plugins import register_plugin_assets_directory
++from CTFd.plugins import (
++        register_plugin_assets_directory,
++        register_admin_plugin_menu_bar,
++)
+ from CTFd.plugins.challenges import CHALLENGE_CLASSES
+ from CTFd.utils import user as current_user
+ from CTFd.utils.decorators import admins_only, authed_only
+@@ -27,6 +31,9 @@ def load(app):
+     register_plugin_assets_directory(
+         app, base_path="/plugins/ctfd-whale/assets/"
+     )
++    register_admin_plugin_menu_bar(
++        'Whale', '/plugins/ctfd-whale/admin/settings'
++    )
+ 
+     page_blueprint = Blueprint(
+         "ctfd-whale",
+@@ -82,7 +89,7 @@ def load(app):
+         DBUtils.renew_current_container(user_id=user_id, challenge_id=challenge_id)
+         return json.dumps({'success': True})
+ 
+-    @page_blueprint.route('/container', methods=['POST'])
++    @app.route('/api/v1/container', methods=['POST'])
+     @authed_only
+     def add_container():
+         user_id = current_user.get_current_user().id
+@@ -106,7 +113,7 @@ def load(app):
+         dynamic_docker_challenge = DynamicDockerChallenge.query \
+             .filter(DynamicDockerChallenge.id == challenge_id) \
+             .first_or_404()
+-        flag = "flag{" + str(uuid.uuid4()) + "}"
++        flag = "minil{" + str(uuid.uuid4()) + "}"
+         if dynamic_docker_challenge.redirect_type == "http":
+             ControlUtil.add_container(app=app, user_id=user_id, challenge_id=challenge_id, flag=flag)
+         else:
+@@ -116,7 +123,7 @@ def load(app):
+         redis_util.release_lock()
+         return json.dumps({'success': True})
+ 
+-    @page_blueprint.route('/container', methods=['GET'])
++    @app.route('/api/v1/container', methods=['GET'])
+     @authed_only
+     def list_container():
+         user_id = current_user.get_current_user().id
+@@ -126,32 +133,31 @@ def load(app):
+         configs = DBUtils.get_all_configs()
+         domain = configs.get('frp_http_domain_suffix', "")
+         timeout = int(configs.get("docker_timeout", "3600"))
+-        if data is not None:
+-            if int(data.challenge_id) != int(challenge_id):
+-                return json.dumps({})
+-            dynamic_docker_challenge = DynamicDockerChallenge.query \
+-                .filter(DynamicDockerChallenge.id == data.challenge_id) \
+-                .first_or_404()
+-            lan_domain = str(user_id) + "-" + data.uuid
+-            if dynamic_docker_challenge.redirect_type == "http":
+-                if int(configs.get('frp_http_port', "80")) == 80:
+-                    return json.dumps({'success': True, 'type': 'http', 'domain': data.uuid + domain,
+-                                       'remaining_time': timeout - (datetime.now() - data.start_time).seconds,
+-                                       'lan_domain': lan_domain})
+-                else:
+-                    return json.dumps({'success': True, 'type': 'http',
+-                                       'domain': data.uuid + domain + ":" + configs.get('frp_http_port', "80"),
+-                                       'remaining_time': timeout - (datetime.now() - data.start_time).seconds,
+-                                       'lan_domain': lan_domain})
++        if (data is None) or (int(data.challenge_id) != int(challenge_id)):
++            return json.dumps({'success': True})
++        dynamic_docker_challenge = DynamicDockerChallenge.query \
++            .filter(DynamicDockerChallenge.id == data.challenge_id) \
++            .first_or_404()
++        lan_domain = hashlib.md5(
++            (str(user_id) + "-" + data.uuid).encode()
++        ).hexdigest()
++        if dynamic_docker_challenge.redirect_type == "http":
++            if int(configs.get('frp_http_port', "80")) == 80:
++                return json.dumps({'success': True, 'type': 'http', 'domain': lan_domain + domain,
++                                   'remaining_time': timeout - (datetime.now() - data.start_time).seconds,
++                                   'lan_domain': lan_domain})
+             else:
+-                return json.dumps({'success': True, 'type': 'redirect', 'ip': configs.get('frp_direct_ip_address', ""),
+-                                   'port': data.port,
++                return json.dumps({'success': True, 'type': 'http',
++                                   'domain': lan_domain + domain + ":" + configs.get('frp_http_port', "80"),
+                                    'remaining_time': timeout - (datetime.now() - data.start_time).seconds,
+                                    'lan_domain': lan_domain})
+         else:
+-            return json.dumps({'success': True})
++            return json.dumps({'success': True, 'type': 'redirect', 'ip': configs.get('frp_direct_ip_address', ""),
++                               'port': data.port,
++                               'remaining_time': timeout - (datetime.now() - data.start_time).seconds,
++                               'lan_domain': lan_domain})
+ 
+-    @page_blueprint.route('/container', methods=['DELETE'])
++    @app.route('/api/v1/container', methods=['DELETE'])
+     @authed_only
+     def remove_container():
+         user_id = current_user.get_current_user().id
+@@ -169,7 +175,7 @@ def load(app):
+         else:
+             return json.dumps({'success': False, 'msg': 'Failed when destroy instance, please contact admin!'})
+ 
+-    @page_blueprint.route('/container', methods=['PATCH'])
++    @app.route('/api/v1/container', methods=['PATCH'])
+     @authed_only
+     def renew_container():
+         user_id = current_user.get_current_user().id
+diff --git a/assets/view.js b/assets/view.js
+index 127fc62..eb0a30b 100644
+--- a/assets/view.js
++++ b/assets/view.js
+@@ -14,7 +14,7 @@ if ($ === undefined) $ = CTFd.lib.$;
+ 
+ function loadInfo() {
+     var challenge_id = parseInt($('#challenge-id').val());
+-    var url = "/plugins/ctfd-whale/container?challenge_id=" + challenge_id;
++    var url = "/api/v1/container?challenge_id=" + challenge_id;
+ 
+     var params = {};
+ 
+@@ -91,7 +91,7 @@ function loadInfo() {
+ 
+ CTFd._internal.challenge.destroy = function() {
+     var challenge_id = parseInt($('#challenge-id').val());
+-    var url = "/plugins/ctfd-whale/container?challenge_id=" + challenge_id;
++    var url = "/api/v1/container?challenge_id=" + challenge_id;
+ 
+     $('#whale-button-destroy')[0].innerHTML = "Waiting...";
+     $('#whale-button-destroy')[0].disabled = true;
+@@ -138,7 +138,7 @@ CTFd._internal.challenge.destroy = function() {
+ 
+ CTFd._internal.challenge.renew = function() {
+     var challenge_id = parseInt($('#challenge-id').val());
+-    var url = "/plugins/ctfd-whale/container?challenge_id=" + challenge_id;
++    var url = "/api/v1/container?challenge_id=" + challenge_id;
+ 
+     $('#whale-button-renew')[0].innerHTML = "Waiting...";
+     $('#whale-button-renew')[0].disabled = true;
+@@ -185,7 +185,7 @@ CTFd._internal.challenge.renew = function() {
+ 
+ CTFd._internal.challenge.boot = function() {
+     var challenge_id = parseInt($('#challenge-id').val());
+-    var url = "/plugins/ctfd-whale/container?challenge_id=" + challenge_id;
++    var url = "/api/v1/container?challenge_id=" + challenge_id;
+ 
+     $('#whale-button-boot')[0].innerHTML = "Waiting...";
+     $('#whale-button-boot')[0].disabled = true;
+diff --git a/config.json b/config.json
+deleted file mode 100644
+index 2e7a70f..0000000
+--- a/config.json
++++ /dev/null
+@@ -1,4 +0,0 @@
+-{
+-    "name": "CTFd Whale",
+-    "route": "/plugins/ctfd-whale/admin/settings"
+-}
+\ No newline at end of file
+diff --git a/control_utils.py b/control_utils.py
+index 34c6708..f1548b5 100644
+--- a/control_utils.py
++++ b/control_utils.py
+@@ -1,11 +1,12 @@
+ import time
+ 
+-from CTFd.models import Challenges, Users
++from CTFd.models import Users
+ from .db_utils import DBUtils
+ from .docker_utils import DockerUtils
+ from sqlalchemy.sql import and_
+ from flask import session
+ from .redis_utils import RedisUtils
++from .models import DynamicDockerChallenge
+ 
+ class ControlUtil:
+     @staticmethod
+@@ -39,13 +40,16 @@ class ControlUtil:
+         user = Users.query.filter_by(id=user_id).first()
+ 
+         if user.type == "admin":
+-            Challenges.query.filter(
+-                Challenges.id == challenge_id
++            DynamicDockerChallenge.query.filter(
++                DynamicDockerChallenge.id == challenge_id
+             ).first_or_404()
+         else:
+-            Challenges.query.filter(
+-                Challenges.id == challenge_id,
+-                and_(Challenges.state != "hidden", Challenges.state != "locked"),
++            DynamicDockerChallenge.query.filter(
++                DynamicDockerChallenge.id == challenge_id,
++                and_(
++                    DynamicDockerChallenge.state != "hidden", 
++                    DynamicDockerChallenge.state != "locked"
++                ),
+             ).first_or_404()
+ 
+     @staticmethod
+diff --git a/db_utils.py b/db_utils.py
+index 9868281..e2591c3 100644
+--- a/db_utils.py
++++ b/db_utils.py
+@@ -49,21 +49,13 @@ class DBUtils:
+     def get_current_containers(user_id):
+         q = db.session.query(WhaleContainer)
+         q = q.filter(WhaleContainer.user_id == user_id)
+-        records = q.all()
+-        if len(records) == 0:
+-            return None
+-
+-        return records[0]
++        return q.first()
+ 
+     @staticmethod
+     def get_container_by_port(port):
+         q = db.session.query(WhaleContainer)
+         q = q.filter(WhaleContainer.port == port)
+-        records = q.all()
+-        if len(records) == 0:
+-            return None
+-
+-        return records[0]
++        return q.first()
+ 
+     @staticmethod
+     def remove_current_container(user_id):
+diff --git a/frp_utils.py b/frp_utils.py
+index 4c55eff..504a87d 100644
+--- a/frp_utils.py
++++ b/frp_utils.py
+@@ -1,3 +1,4 @@
++import hashlib
+ import requests
+ 
+ from .db_utils import DBUtils
+@@ -8,7 +9,7 @@ class FrpUtils:
+     @staticmethod
+     def update_frp_redirect():
+         configs = DBUtils.get_all_configs()
+-        domain = configs.get('frp_http_domain_suffix', "")
++        domain_suffix = configs.get('frp_http_domain_suffix', "")
+ 
+         containers = DBUtils.get_all_alive_container()
+ 
+@@ -38,17 +39,20 @@ class FrpUtils:
+             dynamic_docker_challenge = DynamicDockerChallenge.query \
+                 .filter(DynamicDockerChallenge.id == c.challenge_id) \
+                 .first_or_404()
+-
++            domain = hashlib.md5(
++                (str(c.user_id) + '-' + c.uuid).encode()
++            ).hexdigest()
+             if dynamic_docker_challenge.redirect_type == 'http':
+                 output += http_template % (
+                     str(c.user_id) + '-' + c.uuid, str(c.user_id) + '-' + c.uuid,
+-                    dynamic_docker_challenge.redirect_port, c.uuid + domain)
++                    dynamic_docker_challenge.redirect_port, domain + domain_suffix)
+             else:
+                 output += direct_template % (
+-                    str(c.user_id) + '-' + c.uuid, str(c.user_id) + '-' + c.uuid,
++                    domain, str(c.user_id) + '-' + c.uuid,
+                     dynamic_docker_challenge.redirect_port, c.port,
+-                    str(c.user_id) + '-' + c.uuid, str(c.user_id) + '-' + c.uuid,
+-                    dynamic_docker_challenge.redirect_port, c.port)
++                    domain, str(c.user_id) + '-' + c.uuid,
++                    dynamic_docker_challenge.redirect_port, c.port
++                )
+ 
+         requests.put("http://" + configs.get("frp_api_ip") + ":" + configs.get("frp_api_port") + "/api/config", output,
+                      timeout=5)
+diff --git a/templates/containers.html b/templates/containers.html
+index f79e423..b7784b5 100644
+--- a/templates/containers.html
++++ b/templates/containers.html
+@@ -48,9 +48,9 @@
+ 								<span>
+                                     {% if container.port == 0 %}
+                                         {% if configs.get('frp_http_port', "80") == "80" %}
+-                                            {{ "http://" + container.uuid + configs.get('frp_http_domain_suffix', "") }}
++                                            http://{{ (container.user_id|string + '-' + container.uuid) | hash('md5') }}{{ configs.get('frp_http_domain_suffix', "") }}
+                                         {% else %}
+-                                            {{ "http://" + container.uuid + configs.get('frp_http_domain_suffix', "") + ":" + configs.get('frp_http_port', "80")}}
++											http://{{ (container.user_id|string + '-' + container.uuid) | hash('md5') }}{{ configs.get('frp_http_domain_suffix', "") }}:{{ configs.get('frp_http_port', "80") }}
+                                         {% endif %}
+                                     {% else %}
+                                         {{ configs.get('frp_direct_ip_address', "")}}:{{ container.port }}

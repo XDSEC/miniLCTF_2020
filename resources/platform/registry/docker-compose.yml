@@ -1,0 +1,26 @@
+version: '3.5'
+services:
+    registry_browser:
+        image: klausmeyer/docker-registry-browser
+        networks:
+            default:
+        ports:
+            - 127.0.0.1:9001:8080
+        environment:
+            - DOCKER_REGISTRY_URL=http://registry:5000
+            - ENABLE_DELETE_IMAGES=true
+
+    registry:
+        image: registry:2
+        networks:
+            default:
+        ports:
+            - 127.0.0.1:5000:5000
+        environment:
+            - REGISTRY_STORAGE_DELETE_ENABLED=true
+        volumes:
+            - /root/maintenance/registry:/var/lib/registry
+
+
+networks:
+    default:

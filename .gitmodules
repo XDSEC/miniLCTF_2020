@@ -1,0 +1,9 @@
+[submodule "resources/platform/frontend"]
+	path = resources/platform/frontend
+	url = https://github.com/frankli0324/MiniL-2020-Frontend
+[submodule "resources/platform/backend/ctfd-whale"]
+	path = resources/platform/backend/ctfd-whale
+	url = https://github.com/glzjin/ctfd-whale
+[submodule "resources/platform/backend/ctfd-more-events"]
+	path = resources/platform/backend/ctfd-more-events
+	url = https://github.com/mssctf-platform/ctfd-more-events
