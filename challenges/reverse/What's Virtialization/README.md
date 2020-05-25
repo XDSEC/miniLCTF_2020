@@ -4,4 +4,4 @@
 
 另：
 1、选手在写WP的时候说不懂本题的虚拟化是什么意思，详见ollvm的相关虚拟化手段, [https://github.com/obfuscator-llvm/obfuscator/wiki/Instructions-Substitution] 本题仅运用了VMP万用门作为虚拟化的引入。
-2、流平整代码已作为注释在源码中给出，可编译后dbg感受一下流平整的难度（
+2、流平整代码已在源码中给出，可编译后dbg感受一下流平整的难度（
